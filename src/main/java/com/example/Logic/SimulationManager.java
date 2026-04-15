@@ -96,4 +96,35 @@ public class SimulationManager {
         // 3. No process is currently on the CPU
         return arrivalIdx >= allProcesses.size() && readyQueue.isEmpty() && currentRunning == null;
     }
+    //when remove process from gui remove from simulation manager
+    public void removeProcess(Process p) {
+    if (allProcesses.contains(p)) {
+        allProcesses.remove(p);
+        // Important: Reset the pointer so the manager re-scans 
+        // the pool for arrivals correctly when the simulation starts.
+        arrivalIdx = 0; 
+    }
+    }
+    public double getAverageWaitingTime() {
+        if (allProcesses.isEmpty()) return 0;
+        double sum = 0;
+        for (Process p : allProcesses) sum += p.getWaitingTime();
+        return sum / allProcesses.size();
+    }
+    public double getAverageTurnaroundTime() {
+        if (allProcesses.isEmpty()) return 0;
+        double sum = 0;
+        for (Process p : allProcesses) sum += p.getTurnaroundTime();
+        return sum / allProcesses.size();
+    }
+
+    public void clearAll() {
+        allProcesses.clear();
+        readyQueue.clear();
+        chartSegments.clear();
+        currentRunning = null;
+        currentTime = 0;
+        arrivalIdx = 0;
+        segmentStartTime = 0;
+    }
 }

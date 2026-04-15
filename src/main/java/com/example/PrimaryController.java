@@ -17,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.util.Duration;
 
 public class PrimaryController implements Initializable {
 
@@ -37,7 +38,7 @@ public class PrimaryController implements Initializable {
     // MUST match the fx:id in FXML file exactly
     @FXML private Button startButton;
     @FXML private Button pauseButton;
-    @FXML private Button stopButton;
+    // @FXML private Button stopButton;
     @FXML private Button addButton;
     @FXML private Button removeButton;
 
@@ -73,7 +74,7 @@ public class PrimaryController implements Initializable {
         modeChoiceBox.setValue("Select Mode...");
 
         // 2. Link Table Columns (Matches getters in your Process class)
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("stringId"));
         arrivalColumn.setCellValueFactory(new PropertyValueFactory<>("arrivalTime"));
         burstColumn.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
         remainingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("remainingTime"));
@@ -97,7 +98,7 @@ public class PrimaryController implements Initializable {
         // Initial state: Start, Pause, and Stop buttons disabled
         startButton.setDisable(true);
         pauseButton.setDisable(true);
-        stopButton.setDisable(true);
+        // stopButton.setDisable(true);
 
         // Reactive UI: Enable Start button only when list size >= 2
         // Listen to list changes
@@ -117,7 +118,7 @@ public class PrimaryController implements Initializable {
         // When running: Start is disabled, Pause and Stop are enabled
         startButton.setDisable(isRunning);
         pauseButton.setDisable(!isRunning);
-        stopButton.setDisable(!isRunning);
+        // stopButton.setDisable(!isRunning);
 
         // When running: Modifying the list (Add/Remove) is forbidden
         addButton.setDisable(isRunning);
@@ -167,14 +168,17 @@ public class PrimaryController implements Initializable {
         Process selected = processTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             processList.remove(selected);
-            // simulationManager.removeProcess(selected);
+            simulationManager.removeProcess(selected);
         }
     }
 
     @FXML
     private void handleClear() {
         processList.clear();
-        // simulationManager.clearAll();
+        simulationManager = new SimulationManager();
+        Process.resetIdCounter();
+        clearStatistics();
+        simulationManager.clearAll();
     }
 
     @FXML
@@ -194,8 +198,28 @@ public class PrimaryController implements Initializable {
         // Trigger Live or Static Simulation
         if (modeChoiceBox.getValue().contains("Dynamic")) {
             // Start your JavaFX Timeline here
+            timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                if (!isPaused) {
+                    simulationManager.tick();
+                    processTable.refresh();
+
+                    if (simulationManager.isAllFinished()) {
+                        timer.stop();
+                        isRunning = false;
+                        updateButtonStates(false, false);
+                        updateStatistics();
+                    }
+                }
+            }));
+            timer.setCycleCount(Timeline.INDEFINITE);
+            timer.play();
         } else {
             // Run Static Loop
+            while (!simulationManager.isAllFinished()) {
+                simulationManager.tick();
+            }
+            processTable.refresh();
+            updateStatistics();
         }
     }
 
@@ -205,21 +229,40 @@ public class PrimaryController implements Initializable {
         pauseButton.setText(isPaused ? "Resume" : "Pause");
     }
 
-    @FXML
-    private void handleStop() {
-        isRunning = false;
-        isPaused = false;
-        updateButtonStates(false, false);
-        if (timer != null) {
-            timer.stop();
-        }
-        processList.forEach(p -> p.setRemainingTime(p.getBurstTime())); // Reset
-        processTable.refresh();
-    }
+    // @FXML
+    // private void handleStop() {
+    //     isRunning = false;
+    //     isPaused = false;
+    //     updateButtonStates(false, false);
+    //     if (timer != null) {
+    //         timer.stop();
+    //     }
+    //     processList.forEach(p -> p.setRemainingTime(p.getBurstTime())); // Reset
+    //     processTable.refresh();
+    //     clearStatistics();
+    // }
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+
+    // Statistics
+    @FXML private TextField avgWaitingField;
+    @FXML private TextField avgTurnaroundField;
+    private void updateStatistics() {
+        double avgWait = simulationManager.getAverageWaitingTime();
+        double avgTurnaround  = simulationManager.getAverageTurnaroundTime();
+        avgWaitingField.setText(String.format("%.2f", avgWait));
+        avgTurnaroundField.setText(String.format("%.2f", avgTurnaround));
+    }
+
+    private void clearStatistics() {
+        avgWaitingField.clear();
+        avgTurnaroundField.clear();
+    }
+
+    
 }

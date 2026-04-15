@@ -38,6 +38,7 @@ public class Process {
     public void setWaitingTime(int waitingTime) { this.waitingTime = waitingTime; }
     public void setTurnaroundTime(int turnaroundTime) { this.turnaroundTime = turnaroundTime; }
     public void setRemainingTime(int remainingTime) { this.remainingTime = remainingTime;}
+    public String getStringId() {return "P" + id;}
     
     public void decrementTime() {
         this.remainingTime--;
@@ -52,4 +53,9 @@ public class Process {
         this.turnaroundTime = completionTime - arrivalTime;
         this.waitingTime = turnaroundTime - burstTime;
     }
+
+    public static void resetIdCounter() {
+    idCounter = 0;
+    }
+
 }
