@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+// HABIBA COOL GDANNNN
+
 // Manages the simulation
 public class SimulationManager {
     private List<Process> allProcesses = new ArrayList<>();
