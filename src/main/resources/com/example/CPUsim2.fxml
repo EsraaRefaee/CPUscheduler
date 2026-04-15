@@ -17,9 +17,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="724.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.PrimaryController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="723.0" prefWidth="610.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.PrimaryController">
    <children>
-      <VBox layoutX="-4.0" prefHeight="724.0" prefWidth="606.0">
+      <VBox layoutX="-11.0" prefHeight="723.0" prefWidth="607.0">
          <children>
             <ScrollPane vbarPolicy="NEVER">
                <VBox.margin>
@@ -33,7 +33,7 @@
                <children>
                   <HBox>
                      <children>
-                        <VBox prefHeight="52.0" prefWidth="150.0">
+                        <VBox>
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Algorithm:" />
                               <ChoiceBox fx:id="algoChoiceBox" prefHeight="25.0" prefWidth="169.0">
@@ -46,7 +46,7 @@
                               <Insets top="5.0" />
                            </padding>
                         </VBox>
-                        <VBox prefWidth="150.0">
+                        <VBox>
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Simulation Mode:" />
                               <ChoiceBox fx:id="modeChoiceBox" prefHeight="25.0" prefWidth="123.0">
@@ -65,13 +65,13 @@
                               <Region prefHeight="25.0" prefWidth="203.0" />
                               <HBox>
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#handleStart" prefHeight="26.0" prefWidth="70.0" text="Start">
+                                    <Button fx:id="startButton" mnemonicParsing="false" onAction="#handleStart" prefHeight="26.0" prefWidth="70.0" text="Start">
                                        <HBox.margin>
                                           <Insets right="7.0" />
                                        </HBox.margin>
                                     </Button>
-                                    <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="70.0" text="Pause" />
-                                    <Button mnemonicParsing="false" prefHeight="26.0" prefWidth="70.0" text="Stop">
+                                    <Button fx:id="pauseButton" mnemonicParsing="false" onAction="#handlePause" prefHeight="26.0" prefWidth="70.0" text="Pause" />
+                                    <Button fx:id="stopButton" mnemonicParsing="false" onAction="#handleStop" prefHeight="26.0" prefWidth="70.0" text="Stop">
                                        <HBox.margin>
                                           <Insets left="7.0" />
                                        </HBox.margin>
@@ -164,12 +164,12 @@
                                     <Region prefWidth="184.0" VBox.vgrow="ALWAYS" />
                                     <HBox fillHeight="false" prefHeight="26.0" prefWidth="168.0">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#handleAddProcess" prefHeight="26.0" prefWidth="80.0" text="Add">
+                                          <Button fx:id="addButton" mnemonicParsing="false" onAction="#handleAddProcess" prefHeight="26.0" prefWidth="80.0" text="Add">
                                              <HBox.margin>
                                                 <Insets right="7.0" />
                                              </HBox.margin>
                                           </Button>
-                                          <Button mnemonicParsing="false" onAction="#handleRemoveProcess" prefHeight="26.0" prefWidth="80.0" text="Remove">
+                                          <Button fx:id="removeButton" mnemonicParsing="false" onAction="#handleRemoveProcess" prefHeight="26.0" prefWidth="80.0" text="Remove">
                                              <HBox.margin>
                                                 <Insets right="5.0" />
                                              </HBox.margin>
@@ -209,28 +209,13 @@
                      </padding>
                      <children>
                         <Region prefHeight="18.0" prefWidth="565.0" />
-                        <HBox prefHeight="19.0" prefWidth="577.0">
+                        <HBox prefHeight="19.0" prefWidth="565.0">
                            <children>
-                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average waiting Time:">
-                                 <HBox.margin>
-                                    <Insets top="4.0" />
-                                 </HBox.margin></Label>
-                              <TextField editable="false" prefHeight="26.0" prefWidth="90.0">
-                                 <HBox.margin>
-                                    <Insets left="-5.0" right="10.0" />
-                                 </HBox.margin></TextField>
-                              <Label alignment="CENTER" prefHeight="17.0" prefWidth="181.0" text="Average Turnaround Time:">
-                                 <HBox.margin>
-                                    <Insets top="4.0" />
-                                 </HBox.margin></Label>
-                              <TextField editable="false" prefHeight="10.0" prefWidth="90.0">
-                                 <HBox.margin>
-                                    <Insets left="-10.0" />
-                                 </HBox.margin></TextField>
+                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average waiting Time:" />
+                              <TextField editable="false" prefHeight="10.0" prefWidth="80.0" />
+                              <Label alignment="CENTER" prefHeight="17.0" prefWidth="181.0" text="Average Turnaround Time:" />
+                              <TextField editable="false" prefHeight="10.0" prefWidth="80.0" />
                            </children>
-                           <VBox.margin>
-                              <Insets left="2.0" />
-                           </VBox.margin>
                         </HBox>
                      </children>
                   </VBox>

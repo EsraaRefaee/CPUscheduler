@@ -59,7 +59,6 @@ public class PrimaryController implements Initializable {
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
     private Timeline timer;
-    private int currentTime = 0;
     private boolean isPaused = false;
     private boolean isRunning = false;
 
@@ -80,11 +79,13 @@ public class PrimaryController implements Initializable {
         // 1. Populate Selection Boxes with Placeholders [cite: 10, 11]
         algoChoiceBox.setItems(FXCollections.observableArrayList(
                 "Choose Algorithm...", "FCFS", "SJF (Non Preemptive)", "SRJF (Preemptive)",
-                "Priority (Non Preemptive)", "Priority (Preemptive)", "Round Robin"));
+                "Priority (Non Preemptive)", "Priority (Preemptive)", "Round Robin"
+        ));
         algoChoiceBox.setValue("Choose Algorithm...");
 
         modeChoiceBox.setItems(FXCollections.observableArrayList(
-                "Select Mode...", "Dynamic (Live 1s/unit)", "Static (Instant)"));
+                "Select Mode...", "Dynamic (Live 1s/unit)", "Static (Instant)"
+        ));
         modeChoiceBox.setValue("Select Mode...");
 
         // 2. Link Table Columns (Matches getters in your Process class)
@@ -100,11 +101,11 @@ public class PrimaryController implements Initializable {
         burstSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
         prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
 
-        // 4. Algorithm Selection Listener (Handles Requirement #10)
+        // 4. Algorithm Selection Listener (Handles Requirement #10) 
         algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals("Choose Algorithm...")) {
                 boolean needsPriority = newVal.contains("Priority");
-                prioritySpinner.setDisable(!needsPriority); //
+                prioritySpinner.setDisable(!needsPriority); // 
                 handleAlgorithmStrategy(newVal);
             }
         });
@@ -119,10 +120,8 @@ public class PrimaryController implements Initializable {
         processList.addListener((javafx.collections.ListChangeListener<Process>) c -> updateStartButtonState());
 
         // Listen to ChoiceBox changes
-        algoChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((obs, old, newV) -> updateStartButtonState());
-        modeChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((obs, old, newV) -> updateStartButtonState());
+        algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, old, newV) -> updateStartButtonState());
+        modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, old, newV) -> updateStartButtonState());
 
         // Set initial state
         updateStartButtonState();
@@ -146,7 +145,7 @@ public class PrimaryController implements Initializable {
                 break;
             case "Round Robin":
                 simulationManager.setAlgorithm(new RoundRobin());
-                break; // 3s quantum
+                break; // 3s quantum 
             case "SJF (Preemptive)":
                 simulationManager.setAlgorithm(new SRJF());
                 break;
@@ -162,7 +161,7 @@ public class PrimaryController implements Initializable {
         int arrival = arrivalSpinner.getValue();
         int burst = burstSpinner.getValue();
 
-        // Requirement #11: Only use priority if the algorithm requires it
+        // Requirement #11: Only use priority if the algorithm requires it 
         int priority = prioritySpinner.isDisabled() ? 0 : prioritySpinner.getValue();
 
         // 2. Create the new process object
@@ -182,7 +181,7 @@ public class PrimaryController implements Initializable {
         Process selected = processTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             processList.remove(selected);
-            // simulationManager.removeProcess(selected);
+            // simulationManager.removeProcess(selected); 
         }
     }
 
@@ -194,10 +193,8 @@ public class PrimaryController implements Initializable {
 
     @FXML
     private void handleStart() {
-        // Condition: Check Algorithm and Mode (the size check is handled by the button
-        // state)
-        if (algoChoiceBox.getValue().equals("Choose Algorithm...")
-                || modeChoiceBox.getValue().equals("Select Mode...")) {
+        // Condition: Check Algorithm and Mode (the size check is handled by the button state)
+        if (algoChoiceBox.getValue().equals("Choose Algorithm...") || modeChoiceBox.getValue().equals("Select Mode...")) {
             showError("Please select both an Algorithm and a Simulation Mode.");
             return;
         }
@@ -206,7 +203,7 @@ public class PrimaryController implements Initializable {
         isRunning = true;
         updateButtonStates(true, false);
 
-        // Trigger Live or Static Simulation
+        // Trigger Live or Static Simulation 
         if (modeChoiceBox.getValue().contains("Dynamic")) {
             // Start your JavaFX Timeline here
         } else {
