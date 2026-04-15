@@ -5,20 +5,15 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ChartController {
     private final Canvas canvas;
     private final GraphicsContext gc;
-    private double pixelsPerTick = 28.0;
+    private double pixelsPerTick = 34.0;
     private double leftMargin = 40.0; // where time 0 starts
     private double topMargin = 50.0; // where the first lane starts
     private double laneHeight = 34.0; // vertical height for process lane
-    private double axisX = topMargin + laneHeight + 15.0; // y-coordinate for the horizontal time axis
-
-    private final Map<Integer, Color> pidColorCache = new HashMap<>();
 
     public ChartController(Canvas canvas) {
         this.canvas = canvas;
@@ -39,76 +34,72 @@ public class ChartController {
         gc.setStroke(Color.web("#a4b5de"));
         gc.strokeRect(x, y, w, h);
 
-        String label = "P" + pid;
-        gc.setFill(Color.web("4a4b44"));
-        gc.fillText(label, x + 4.0, y + (laneHeight * 0.65));
+        gc.setFill(Color.web("#4a4b44"));
+        String label = (pid == -1) ? "Idle" : "P" + pid;
+
+        gc.fillText(label, (label.equals("Idle"))? x + 7.0 : x + 9.0, y + (laneHeight * 0.65));
     }
 
-    public void drawTick(int currentTime, int pid) {
-        int endTime = currentTime + 1;
+    // Method for dynamic drawing
+    public void drawTick(int endTime, int pid) {
+        ensureWidthForTime(endTime); // check canvas's width and resize if needed
 
-        ensureWidthForTime(endTime);
-
-        double x = leftMargin + (currentTime * pixelsPerTick);
-        double w = (endTime - currentTime) * pixelsPerTick;
-        // drawBlock(x, w, pid);
+        int startTime = endTime - 1;
+        double x = leftMargin + (startTime * pixelsPerTick);
+        drawBlock(x, pid);
 
         // Draw tick markers for readability.
-        drawTimeMarker(currentTime);
-        drawTimeMarker(endTime);
+        drawTimeMarker(endTime, x);
     }
 
+    // The loop to draw is built-in, only need to call the function when static drawing is needed
     public void drawStatic(List<GanttSegment> segments) {
         reset();
         if (segments == null || segments.isEmpty()) {
             return;
         }
 
+        // Calculate maximum time and adjust canvas width accordingly
         int maxTime = 0;
         for (GanttSegment segment : segments) {
             maxTime = Math.max(maxTime, segment.getEndTime());
         }
         ensureWidthForTime(maxTime);
 
+        // Draw
         for (GanttSegment segment : segments) {
-           // drawTick(segment.getStartTime(), segment.getEndTime(), segment.getPid());
+           drawTick(segment.getEndTime(), segment.getPid());
         }
     }
 
     // Auto-resize width of canvas if needed
     public void ensureWidthForTime(int time) {
-        // neededWidth = startOfChart + spaceForTime + somePadding
+        // The 30.0 is a padding so the chart is not touching the canvas's right edge
         double neededWidth = leftMargin + (time * pixelsPerTick) + 30.0;
 
+        // check if the needed width for the chart is more than the canvas's width
         if (neededWidth > canvas.getWidth()) {
+            // reset canvas's width to the needed width
             canvas.setWidth(neededWidth);
-            // Canvas resize clears content; redraw axis base.
-            drawAxes();
         }
     }
 
     public void reset() {
         // Clear the canvas for a new simulation
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawAxes();
     }
 
-    private void drawAxes() {
-        gc.setStroke(Color.GRAY);
-        gc.setLineWidth(1.0);
-        gc.strokeLine(leftMargin, axisX, Math.max(leftMargin + 1.0, canvas.getWidth() - 10.0), axisX);
+    private void drawTimeMarker(int endTime, double x) {
+        gc.setFill(Color.web("#4a4b44"));
+        double Xcorner = x + pixelsPerTick;
+        double y = topMargin + laneHeight + 15.0;
 
-        gc.setFill(Color.BLACK);
-        gc.fillText("Time", 6.0, axisX + 4.0);
-    }
+        if (endTime - 1 == 0) {
+            // draw the 0 marker at the left margin
+            gc.fillText("0", leftMargin - 3.0, y); // 3.0 is an offset to center the number
+        }
 
-    private void drawTimeMarker(int t) {
-        double x = leftMargin + (t * pixelsPerTick);
-        gc.setStroke(Color.rgb(180, 180, 180));
-        gc.strokeLine(x, axisX - laneHeight - 6.0, x, axisX + 4.0);
-
-        gc.setFill(Color.BLACK);
-        gc.fillText(String.valueOf(t), x - 3.0, axisX + 18.0);
+        gc.fillText(String.valueOf(endTime), Xcorner - 3.0, y); // 3.0 is an offset to center the number
     }
 
 

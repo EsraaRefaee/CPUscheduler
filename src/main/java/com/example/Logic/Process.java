@@ -52,4 +52,5 @@ public class Process {
         this.turnaroundTime = completionTime - arrivalTime;
         this.waitingTime = turnaroundTime - burstTime;
     }
+    public static void resetIdCounter() { idCounter = 0; }
 }

@@ -4,6 +4,7 @@
  */
 package com.example;
 
+import com.example.Logic.ChartController;
 import com.example.Logic.Process;
 import com.example.Logic.SimulationManager;
 import com.example.Logic.Algorithms.*;
@@ -13,9 +14,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.net.URL;
+import javafx.util.Duration;
 import java.util.ResourceBundle;
 
 public class PrimaryController implements Initializable {
@@ -41,10 +44,13 @@ public class PrimaryController implements Initializable {
     @FXML private Button addButton;
     @FXML private Button removeButton;
 
+    // Canvas
+    @FXML private Canvas ganttCanvas;
+
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
+    private ChartController chartController;
     private Timeline timer;
-    private int currentTime = 0;
     private boolean isPaused = false;
     private boolean isRunning = false;
 
@@ -62,7 +68,9 @@ public class PrimaryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 1. Populate Selection Boxes with Placeholders [cite: 10, 11]
+        chartController = new ChartController(ganttCanvas);
+
+        // 1. Populate Selection Boxes with Placeholders
         algoChoiceBox.setItems(FXCollections.observableArrayList(
                 "Choose Algorithm...", "FCFS", "SJF (Non Preemptive)", "SRJF (Preemptive)",
                 "Priority (Non Preemptive)", "Priority (Preemptive)", "Round Robin"));
@@ -84,6 +92,7 @@ public class PrimaryController implements Initializable {
         arrivalSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
         burstSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
         prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
+        arrivalSpinner.setEditable(true); burstSpinner.setEditable(true); prioritySpinner.setEditable(true);
 
         // 4. Algorithm Selection Listener (Handles Requirement #10)
         algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -129,14 +138,20 @@ public class PrimaryController implements Initializable {
             case "FCFS":
                 simulationManager.setAlgorithm(new FCFS());
                 break;
-            case "Round Robin":
-                simulationManager.setAlgorithm(new RoundRobin());
-                break; // 3s quantum
-            case "SJF (Preemptive)":
+            case "SJF (Non Preemptive)":
+                simulationManager.setAlgorithm(new SJF());
+                break;
+            case "SRJF (Preemptive)":
                 simulationManager.setAlgorithm(new SRJF());
+                break;
+            case "Priority (Non Preemptive)":
+                simulationManager.setAlgorithm(new NonPreemptivePriority());
                 break;
             case "Priority (Preemptive)":
                 simulationManager.setAlgorithm(new PreemptivePriority());
+                break;
+            case "Round Robin":
+                simulationManager.setAlgorithm(new RoundRobin());
                 break;
         }
     }
@@ -174,30 +189,81 @@ public class PrimaryController implements Initializable {
     @FXML
     private void handleClear() {
         processList.clear();
+        Process.resetIdCounter();
+        chartController.reset();
         // simulationManager.clearAll();
     }
 
     @FXML
     private void handleStart() {
-        // Condition: Check Algorithm and Mode (the size check is handled by the button
-        // state)
+        // Handle start button constrains
         if (algoChoiceBox.getValue().equals("Choose Algorithm...")
                 || modeChoiceBox.getValue().equals("Select Mode...")) {
             showError("Please select both an Algorithm and a Simulation Mode.");
             return;
         }
 
-        // Update State
+        if (processList.size() < 2) {
+            showError("Please add at least 2 processes.");
+            return;
+        }
+
+        // Rebuild simulation every time Start is pressed to reflect any changes in the process list or algorithm selection
+        simulationManager = new SimulationManager();
+        handleAlgorithmStrategy(algoChoiceBox.getValue());
+
+        for (Process p : processList) {
+            p.setRemainingTime(p.getBurstTime()); // Reset remaining time before starting
+            simulationManager.addProcess(p);
+        }
+
+        // Reset visual state
+        chartController.reset();
+        SimulationManager.resetCurrentTime();
+        isPaused = false;
+        pauseButton.setText("Pause");
         isRunning = true;
         updateButtonStates(true, false);
 
-        // Trigger Live or Static Simulation
+        // Stop any old timeline
+        if (timer != null) { timer.stop(); }
+
         if (modeChoiceBox.getValue().contains("Dynamic")) {
-            // Start your JavaFX Timeline here
+            timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                if (isPaused) {
+                    return;
+                }
+
+                if (simulationManager.isAllFinished()) {
+                    timer.stop();
+                    isRunning = false;
+                    updateButtonStates(false, false);
+                    return;
+                }
+
+                Process executed = simulationManager.tick();
+
+                if (executed == null) {
+                    chartController.drawTick(simulationManager.getCurrentTime(), -1);
+                } else {
+                    chartController.drawTick(simulationManager.getCurrentTime(), executed.getId());
+                }
+                processTable.refresh(); // Update remaining times in the table
+            }));
+
+            timer.setCycleCount(Timeline.INDEFINITE);
+            timer.playFromStart();
+
         } else {
-            // Run Static Loop
+            // Static mode: run the whole simulation first
+            simulationManager.generateSegments();
+            chartController.drawStatic(simulationManager.getChartSegments());
+
+            isRunning = false;
+            updateButtonStates(false, false);
         }
     }
+
 
     @FXML
     private void handlePause() {

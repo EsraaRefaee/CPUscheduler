@@ -13,17 +13,18 @@ public class SimulationManager {
     private Queue<Process> readyQueue = new LinkedList<>();
     private List<GanttSegment> chartSegments = new ArrayList<>();
     private Scheduler scheduler;
-    private int currentTime = 0;
+    private static int currentTime = 0;
     private int arrivalIdx = 0;
     private Process currentRunning= null;
-    private int segmentStartTime;
 
     public void setAlgorithm(Scheduler algo) {
         this.scheduler = algo;
     }
     public List<GanttSegment> getChartSegments(){ return chartSegments; }
+    public static void resetCurrentTime() { currentTime = 0; }
+    public int getCurrentTime() { return currentTime; }
+    public static void incrementTime() { currentTime++; }
 
-    // TODO: Assumed allProcesses list must be sorted ascendingly by arrival time every time a new process is added
     private void updateReadyQueue() {
         // Doesn't loop unless there are processes that have arrived at the current time
         while (arrivalIdx < allProcesses.size() && allProcesses.get(arrivalIdx).getArrivalTime() <= currentTime) {
@@ -33,57 +34,34 @@ public class SimulationManager {
     }
 
     // Simulate one tick of the CPU scheduler (choose next process and dispatch it)
-    public void tick() {
-    updateReadyQueue();
-    Process nextProcess = scheduler.getNextProcess(readyQueue, currentTime);
+    public Process tick() {
+        updateReadyQueue();
+        currentRunning = scheduler.getNextProcess(readyQueue, currentTime);
+        Process executedThisTick = currentRunning; // Store the process that will run in this tick for Gantt chart segment creation
 
-    // 1. Handle Context Switching / Gantt Segment Start
-    if (nextProcess != currentRunning) {
-        // Before switching, if someone was running, close their segment
         if (currentRunning != null) {
-            chartSegments.add(new GanttSegment(segmentStartTime, currentTime, currentRunning.getId()));
+            currentRunning.decrementTime();
+            if (currentRunning.isFinished()) {
+                readyQueue.remove(currentRunning);
+                currentRunning = null;
+            }
         }
-        
-        contextSwitch(nextProcess);
-        segmentStartTime = currentTime; // The new process starts exactly now
+        currentTime++;
+        return executedThisTick; // Process that ran in this tick (To deal with idle state)
     }
 
-    // 2. Increment time for the work about to be done
-    currentTime++; 
+    public void generateSegments() {
+        // Clear list first to avoid multiple generations if called for than once
+        chartSegments.clear();
 
-    // 3. Execute the process
-    if (currentRunning != null) {
-        currentRunning.decrementTime();
+        while (!isAllFinished()) {
+            Process thisTickProcess = tick();
+            chartSegments.add(new GanttSegment(currentTime - 1, currentTime, thisTickProcess != null ?
+                    thisTickProcess.getId() : -1)); // -1 for idle
 
-        // 4. Check if finished AFTER the decrement
-        if (currentRunning.isFinished()) {
-            // Since we already incremented currentTime, this is the exact finish time
-            currentRunning.setCompletionTime(currentTime); 
-            currentRunning.terminateProcess();
-            
-            readyQueue.remove(currentRunning);
-
-            // Close the segment in the Gantt chart
-            chartSegments.add(new GanttSegment(segmentStartTime, currentTime, currentRunning.getId()));
-
-            currentRunning = null; 
-            segmentStartTime = currentTime; // Reset for potential idle time or next process
         }
     }
-}
 
-    private void contextSwitch(Process nextProcess) {
-        // if there is a currently running process, we need to end its segment in the Gantt chart
-        if (currentRunning != null) {
-            chartSegments.add(new GanttSegment(segmentStartTime, currentTime, currentRunning.getId()));
-        }
-
-        // Start a new segment for the next process
-        segmentStartTime = currentTime;
-        currentRunning = nextProcess;
-    }
-    
-    /////////////////////////////////////////////////////////////
     public void addProcess(Process p) {
         allProcesses.add(p);
         // Requirement: Must be sorted by arrival time so updateReadyQueue works 
