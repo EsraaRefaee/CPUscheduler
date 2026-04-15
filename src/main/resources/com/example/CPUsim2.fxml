@@ -19,7 +19,7 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="723.0" prefWidth="610.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.PrimaryController">
    <children>
-      <VBox layoutX="-11.0" prefHeight="723.0" prefWidth="607.0">
+      <VBox prefHeight="723.0" prefWidth="610.0">
          <children>
             <ScrollPane vbarPolicy="NEVER">
                <VBox.margin>
@@ -211,11 +211,26 @@
                         <Region prefHeight="18.0" prefWidth="565.0" />
                         <HBox prefHeight="19.0" prefWidth="565.0">
                            <children>
-                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average waiting Time:" />
-                              <TextField editable="false" prefHeight="10.0" prefWidth="80.0" />
-                              <Label alignment="CENTER" prefHeight="17.0" prefWidth="181.0" text="Average Turnaround Time:" />
-                              <TextField editable="false" prefHeight="10.0" prefWidth="80.0" />
+                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average waiting Time:">
+                                 <HBox.margin>
+                                    <Insets top="4.0" />
+                                 </HBox.margin></Label>
+                              <TextField editable="false" prefHeight="10.0" prefWidth="90.0">
+                                 <HBox.margin>
+                                    <Insets left="-8.0" />
+                                 </HBox.margin></TextField>
+                              <Label alignment="CENTER" prefHeight="17.0" prefWidth="181.0" text="Average Turnaround Time:">
+                                 <HBox.margin>
+                                    <Insets left="10.0" top="4.0" />
+                                 </HBox.margin></Label>
+                              <TextField editable="false" prefHeight="10.0" prefWidth="90.0">
+                                 <HBox.margin>
+                                    <Insets left="-12.0" />
+                                 </HBox.margin></TextField>
                            </children>
+                           <VBox.margin>
+                              <Insets left="5.0" />
+                           </VBox.margin>
                         </HBox>
                      </children>
                   </VBox>
