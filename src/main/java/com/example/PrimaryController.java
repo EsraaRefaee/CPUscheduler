@@ -21,40 +21,25 @@ import java.util.ResourceBundle;
 public class PrimaryController implements Initializable {
 
     // Input Fields
-    @FXML
-    private Spinner<Integer> arrivalSpinner;
-    @FXML
-    private Spinner<Integer> burstSpinner;
-    @FXML
-    private Spinner<Integer> prioritySpinner;
-    @FXML
-    private ChoiceBox<String> algoChoiceBox;
-    @FXML
-    private ChoiceBox<String> modeChoiceBox;
+    @FXML private Spinner<Integer> arrivalSpinner;
+    @FXML private Spinner<Integer> burstSpinner;
+    @FXML private Spinner<Integer> prioritySpinner;
+    @FXML private ChoiceBox<String> algoChoiceBox;
+    @FXML private ChoiceBox<String> modeChoiceBox;
 
     // Table
-    @FXML
-    private TableView<Process> processTable;
-    @FXML
-    private TableColumn<Process, Integer> idColumn;
-    @FXML
-    private TableColumn<Process, Integer> arrivalColumn;
-    @FXML
-    private TableColumn<Process, Integer> burstColumn;
-    @FXML
-    private TableColumn<Process, Integer> remainingTimeColumn;
+    @FXML private TableView<Process> processTable;
+    @FXML private TableColumn<Process, Integer> idColumn;
+    @FXML private TableColumn<Process, Integer> arrivalColumn;
+    @FXML private TableColumn<Process, Integer> burstColumn;
+    @FXML private TableColumn<Process, Integer> remainingTimeColumn;
 
     // MUST match the fx:id in FXML file exactly
-    @FXML
-    private Button startButton;
-    @FXML
-    private Button pauseButton;
-    @FXML
-    private Button stopButton;
-    @FXML
-    private Button addButton;
-    @FXML
-    private Button removeButton;
+    @FXML private Button startButton;
+    @FXML private Button pauseButton;
+    @FXML private Button stopButton;
+    @FXML private Button addButton;
+    @FXML private Button removeButton;
 
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
