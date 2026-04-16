@@ -117,8 +117,7 @@ public class ChartController {
         }
 
         // Distinct pastel color per process id (deterministic).
-        // Golden-angle spacing gives good color separation.
-        double hue = (pid * 137.508) % 360.0;
+        double hue = (pid * 137) % 360.0;
         return Color.hsb(hue, 0.20, 0.95); // low saturation + high brightness = pastel
     }
 

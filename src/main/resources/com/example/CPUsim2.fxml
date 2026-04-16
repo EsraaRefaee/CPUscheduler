@@ -166,7 +166,7 @@
                                        <children>
                                           <Button fx:id="addButton" mnemonicParsing="false" onAction="#handleAddProcess" prefHeight="26.0" prefWidth="80.0" text="Add">
                                              <HBox.margin>
-                                                <Insets right="7.0" />
+                                                <Insets right="5.0" />
                                              </HBox.margin>
                                           </Button>
                                           <Button fx:id="removeButton" mnemonicParsing="false" onAction="#handleRemoveProcess" prefHeight="26.0" prefWidth="80.0" text="Remove">
@@ -187,8 +187,8 @@
                             <TableColumn fx:id="arrivalColumn" prefWidth="90.0" text="Arrival Time" />
                               <TableColumn fx:id="burstColumn" prefWidth="85.0" text="Burst Time" />
                               <TableColumn fx:id="remainingTimeColumn" prefWidth="115.0" text="Remaining Time" />
-                              <TableColumn prefWidth="120.0" text="Turnaround Time" />
-                              <TableColumn prefWidth="93.0" text="Waiting Time" />
+                              <TableColumn fx:id="turnaroundColumn" prefWidth="120.0" text="Turnaround Time" />
+                              <TableColumn fx:id="waitingColumn" prefWidth="93.0" text="Waiting Time" />
                           </columns>
                            <VBox.margin>
                               <Insets bottom="5.0" left="7.0" right="7.0" top="5.0" />

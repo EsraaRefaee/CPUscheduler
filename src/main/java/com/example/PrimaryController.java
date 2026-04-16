@@ -36,6 +36,8 @@ public class PrimaryController implements Initializable {
     @FXML private TableColumn<Process, Integer> arrivalColumn;
     @FXML private TableColumn<Process, Integer> burstColumn;
     @FXML private TableColumn<Process, Integer> remainingTimeColumn;
+    @FXML private TableColumn<Process, Integer> turnaroundColumn;
+    @FXML private TableColumn<Process, Integer> waitingColumn;
 
     // MUST match the fx:id in FXML file exactly
     @FXML private Button startButton;
@@ -91,6 +93,8 @@ public class PrimaryController implements Initializable {
         arrivalColumn.setCellValueFactory(new PropertyValueFactory<>("arrivalTime"));
         burstColumn.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
         remainingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("remainingTime"));
+        turnaroundColumn.setCellValueFactory(new PropertyValueFactory<>("turnaroundTime"));
+        waitingColumn.setCellValueFactory(new PropertyValueFactory<>("waitingTime"));
 
         processTable.setItems(processList);
 

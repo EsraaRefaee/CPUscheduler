@@ -36,8 +36,6 @@ public class Process {
     public int getWaitingTime() { return waitingTime;}
     public int getTurnaroundTime() { return turnaroundTime; }
     public String getStringId() { return "P" + id; }
-    public void setWaitingTime(int waitingTime) { this.waitingTime = waitingTime; }
-    public void setTurnaroundTime(int turnaroundTime) { this.turnaroundTime = turnaroundTime; }
     public void setRemainingTime(int remainingTime) { this.remainingTime = remainingTime;}
 
     public void decrementTime() {
