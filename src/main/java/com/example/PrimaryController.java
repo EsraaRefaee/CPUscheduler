@@ -24,42 +24,27 @@ import java.util.ResourceBundle;
 public class PrimaryController implements Initializable {
 
     // Input Fields
-    @FXML
-    private Spinner<Integer> arrivalSpinner;
-    @FXML
-    private Spinner<Integer> burstSpinner;
-    @FXML
-    private Spinner<Integer> prioritySpinner;
-    @FXML
-    private ChoiceBox<String> algoChoiceBox;
-    @FXML
-    private ChoiceBox<String> modeChoiceBox;
+    @FXML private Spinner<Integer> arrivalSpinner;
+    @FXML private Spinner<Integer> burstSpinner;
+    @FXML private Spinner<Integer> prioritySpinner;
+    @FXML private ChoiceBox<String> algoChoiceBox;
+    @FXML private ChoiceBox<String> modeChoiceBox;
 
     // Table
-    @FXML
-    private TableView<Process> processTable;
-    @FXML
-    private TableColumn<Process, Integer> idColumn;
-    @FXML
-    private TableColumn<Process, Integer> arrivalColumn;
-    @FXML
-    private TableColumn<Process, Integer> burstColumn;
-    @FXML
-    private TableColumn<Process, Integer> remainingTimeColumn;
+    @FXML private TableView<Process> processTable;
+    @FXML private TableColumn<Process, Integer> idColumn;
+    @FXML private TableColumn<Process, Integer> arrivalColumn;
+    @FXML private TableColumn<Process, Integer> burstColumn;
+    @FXML private TableColumn<Process, Integer> remainingTimeColumn;
 
     // MUST match the fx:id in FXML file exactly
-    @FXML
-    private Button startButton;
-    @FXML
-    private Button pauseButton;
-    @FXML
-    private Button addButton;
-    @FXML
-    private Button removeButton;
+    @FXML private Button startButton;
+    @FXML private Button pauseButton;
+    @FXML private Button addButton;
+    @FXML private Button removeButton;
 
     // Canvas
-    @FXML
-    private Canvas ganttCanvas;
+    @FXML private Canvas ganttCanvas;
 
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
@@ -117,7 +102,7 @@ public class PrimaryController implements Initializable {
         burstSpinner.setEditable(true);
         prioritySpinner.setEditable(true);
 
-        // 4. Algorithm Selection Listener (Handles Requirement #10)
+        // 4. Algorithm Selection Listener
         algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals("Choose Algorithm...")) {
                 boolean needsPriority = newVal.contains("Priority");
@@ -184,21 +169,23 @@ public class PrimaryController implements Initializable {
 
     @FXML
     private void handleAddProcess() {
-        // 1. Collect inputs from UI spinners
+        // Collect inputs from UI spinners
         int arrival = arrivalSpinner.getValue();
         int burst = burstSpinner.getValue();
 
-        // Requirement #11: Only use priority if the algorithm requires it
+        // Only use priority if the algorithm requires it
         int priority = prioritySpinner.isDisabled() ? 0 : prioritySpinner.getValue();
 
-        // 2. Create the new process object
+        // Create the new process object
         Process newP = new Process(burst, arrival, priority);
-
-        // 3. Add to UI List (Updates the TableView automatically)
         processList.add(newP);
+        simulationManager.addProcess(newP); // Add to Logic Manager (Makes it available for the scheduler)
 
-        // 4. Add to Logic Manager (Makes it available for the scheduler)
-        simulationManager.addProcess(newP);
+        // If we add a new process during pause, it should be considered in the ready queue immediately
+        // and not wait for the next tick
+        if (isRunning) {
+            simulationManager.rebuildReadyQueue();
+        }
     }
 
     @FXML
@@ -208,6 +195,7 @@ public class PrimaryController implements Initializable {
             processList.remove(selected);
             simulationManager.removeProcess(selected);
             simulationManager.resetCurrentProcess();
+            simulationManager.rebuildReadyQueue();
             updateStartButtonState();
         }
     }
@@ -301,10 +289,8 @@ public class PrimaryController implements Initializable {
     }
 
     // Statistics
-    @FXML
-    private TextField avgWaitingField;
-    @FXML
-    private TextField avgTurnaroundField;
+    @FXML private TextField avgWaitingField;
+    @FXML private TextField avgTurnaroundField;
 
     private void updateStatistics() {
         double avgWait = simulationManager.getAverageWaitingTime();

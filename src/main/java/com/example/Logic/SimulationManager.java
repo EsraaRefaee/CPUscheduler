@@ -87,11 +87,31 @@ public class SimulationManager {
         }
     }
 
+    public void rebuildReadyQueue() {
+        readyQueue.clear();
+        arrivalIdx = 0;
+
+        // loop through all processes
+        int processesNum = allProcesses.size();
+        for (int i = 0; i < processesNum; i++) {
+            Process p = allProcesses.get(i);
+
+            // only add processes that have arrived and are not finished
+            if (p.getArrivalTime() <= currentTime && !p.isFinished())
+                readyQueue.add(p);
+
+            // Update the arrivalIdx to just after the last arrived process (first not-arrived)
+            if (p.getArrivalTime() <= currentTime)
+                arrivalIdx = i + 1;
+        }
+    }
+
     public void addProcess(Process p) {
         allProcesses.add(p);
-        // Requirement: Must be sorted by arrival time so updateReadyQueue works
+        // Must be sorted by arrival time so updateReadyQueue works
         allProcesses.sort((p1, p2) -> Integer.compare(p1.getArrivalTime(), p2.getArrivalTime()));
     }
+
 
     public boolean isAllFinished() {
         // Finished if:

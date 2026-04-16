@@ -41,13 +41,15 @@ public class Process {
     public void setRemainingTime(int remainingTime) { this.remainingTime = remainingTime;}
 
     public void decrementTime() {
-        this.remainingTime--;
+        if (remainingTime > 0)
+            this.remainingTime--;
     }
+
     public void setCompletionTime(int completionTime) {
         this.completionTime = completionTime;
     }
     public boolean isFinished() {
-        return this.remainingTime == 0;
+        return this.remainingTime <= 0;
     }
     public void terminateProcess() {
         this.turnaroundTime = completionTime - arrivalTime;
