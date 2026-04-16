@@ -28,10 +28,19 @@ public class ChartController {
         double w = pixelsPerTick;
         double h = laneHeight;
 
-        gc.setFill(Color.web("#edf3ff"));
-        gc.fillRect(x, y, w, h); // assuming constant square size
+//        gc.setFill(Color.web("#edf3ff"));
+//        gc.fillRect(x, y, w, h); // assuming constant square size
+//
+//        gc.setStroke(Color.web("#a4b5de"));
+//        gc.strokeRect(x, y, w, h);
 
-        gc.setStroke(Color.web("#a4b5de"));
+        Color fill = getColorForPid(pid);
+        Color stroke = (pid == -1) ? Color.web("#b3b3b3") : fill.deriveColor(0, 1.0, 0.75, 1.0);
+
+        gc.setFill(fill);
+        gc.fillRect(x, y, w, h);
+
+        gc.setStroke(stroke);
         gc.strokeRect(x, y, w, h);
 
         gc.setFill(Color.web("#4a4b44"));
@@ -100,6 +109,17 @@ public class ChartController {
         }
 
         gc.fillText(String.valueOf(endTime), Xcorner - 3.0, y); // 3.0 is an offset to center the number
+    }
+
+    private Color getColorForPid(int pid) {
+        if (pid == -1) {
+            return Color.web("#d9d9d9"); // Idle = light gray
+        }
+
+        // Distinct pastel color per process id (deterministic).
+        // Golden-angle spacing gives good color separation.
+        double hue = (pid * 137.508) % 360.0;
+        return Color.hsb(hue, 0.20, 0.95); // low saturation + high brightness = pastel
     }
 
 

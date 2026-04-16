@@ -33,10 +33,10 @@
                <children>
                   <HBox>
                      <children>
-                        <VBox prefWidth="200.0">
+                        <VBox prefWidth="220.0">
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Algorithm:" />
-                              <ChoiceBox fx:id="algoChoiceBox" prefHeight="25.0" prefWidth="130.0">
+                              <ChoiceBox fx:id="algoChoiceBox" prefHeight="25.0" prefWidth="150.0">
                                  <VBox.margin>
                                     <Insets right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -46,10 +46,10 @@
                               <Insets top="5.0" />
                            </padding>
                         </VBox>
-                        <VBox prefWidth="200.0">
+                        <VBox prefWidth="220.0">
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Simulation Mode:" />
-                              <ChoiceBox fx:id="modeChoiceBox" prefHeight="25.0" prefWidth="130.0">
+                              <ChoiceBox fx:id="modeChoiceBox" prefHeight="25.0" prefWidth="150.0">
                                  <VBox.margin>
                                     <Insets right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -59,8 +59,8 @@
                               <Insets left="5.0" top="5.0" />
                            </padding>
                         </VBox>
-                        <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                        <VBox prefHeight="54.0" prefWidth="211.0">
+                        <Region prefHeight="200.0" prefWidth="149.0" HBox.hgrow="ALWAYS" />
+                        <VBox prefHeight="54.0" prefWidth="230.0">
                            <children>
                               <Region prefHeight="25.0" prefWidth="203.0" />
                               <HBox>
