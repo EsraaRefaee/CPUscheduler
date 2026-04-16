@@ -40,7 +40,6 @@ public class PrimaryController implements Initializable {
     // MUST match the fx:id in FXML file exactly
     @FXML private Button startButton;
     @FXML private Button pauseButton;
-    // @FXML private Button stopButton;
     @FXML private Button addButton;
     @FXML private Button removeButton;
 
@@ -86,6 +85,7 @@ public class PrimaryController implements Initializable {
         burstColumn.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
         remainingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("remainingTime"));
 
+
         processTable.setItems(processList);
 
         // 3. Initialize Spinners
@@ -106,9 +106,8 @@ public class PrimaryController implements Initializable {
         // Initial state: Start, Pause, and Stop buttons disabled
         startButton.setDisable(true);
         pauseButton.setDisable(true);
-        // stopButton.setDisable(true);
 
-        // Reactive UI: Enable Start button only when list size >= 2
+        // Enable Start button only when list size >= 2
         // Listen to list changes
         processList.addListener((javafx.collections.ListChangeListener<Process>) c -> updateStartButtonState());
 
@@ -126,7 +125,6 @@ public class PrimaryController implements Initializable {
         // When running: Start is disabled, Pause and Stop are enabled
         startButton.setDisable(isRunning);
         pauseButton.setDisable(!isRunning);
-        // stopButton.setDisable(!isRunning);
 
         // When running: Modifying the list (Add/Remove) is forbidden
         addButton.setDisable(isRunning);
@@ -173,8 +171,6 @@ public class PrimaryController implements Initializable {
 
         // 4. Add to Logic Manager (Makes it available for the scheduler)
         simulationManager.addProcess(newP);
-
-        System.out.println("Process " + newP.getId() + " added successfully.");
     }
 
     @FXML
@@ -192,23 +188,12 @@ public class PrimaryController implements Initializable {
         simulationManager = new SimulationManager();
         Process.resetIdCounter();
         clearStatistics();
-        // TODO: ADD CHART RESET OR NO?
+        chartController.reset(); // Clears the canvas
         simulationManager.clearAll();
     }
 
     @FXML
     private void handleStart() {
-        // Handle start button constrains
-        if (algoChoiceBox.getValue().equals("Choose Algorithm...")
-                || modeChoiceBox.getValue().equals("Select Mode...")) {
-            showError("Please select both an Algorithm and a Simulation Mode.");
-            return;
-        }
-
-        if (processList.size() < 2) {
-            showError("Please add at least 2 processes.");
-            return;
-        }
 
         // Rebuild simulation every time Start is pressed to reflect any changes in the process list or algorithm selection
         simulationManager = new SimulationManager();
@@ -255,7 +240,7 @@ public class PrimaryController implements Initializable {
             }));
 
             timer.setCycleCount(Timeline.INDEFINITE);
-            timer.playFromStart(); // TODO: PLAYFROMSTART OR JUST PLAY
+            timer.playFromStart();
 
         } else {
             // Static mode: run the whole simulation first
@@ -275,25 +260,11 @@ public class PrimaryController implements Initializable {
         pauseButton.setText(isPaused ? "Resume" : "Pause");
     }
 
-    // @FXML
-    // private void handleStop() {
-    //     isRunning = false;
-    //     isPaused = false;
-    //     updateButtonStates(false, false);
-    //     if (timer != null) {
-    //         timer.stop();
-    //     }
-    //     processList.forEach(p -> p.setRemainingTime(p.getBurstTime())); // Reset
-    //     processTable.refresh();
-    //     clearStatistics();
-    // }
-
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setContentText(message);
         alert.showAndWait();
     }
-
 
     // Statistics
     @FXML private TextField avgWaitingField;

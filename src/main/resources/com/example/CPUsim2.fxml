@@ -26,17 +26,17 @@
                   <Insets bottom="10.0" top="5.0" />
                </VBox.margin>
                <content>
-                  <Canvas fx:id="ganttCanvas" height="173.0" width="586.0" />
+                  <Canvas fx:id="ganttCanvas" height="121.0" width="586.0" />
                </content>
             </ScrollPane>
             <StackPane prefHeight="67.0" prefWidth="586.0" style="-fx-border-color: #d3d3d3; -fx-border-width: 1; -fx-border-radius: 5;" stylesheets="@../../../../../../../borderstyle.css" VBox.vgrow="SOMETIMES">
                <children>
                   <HBox>
                      <children>
-                        <VBox>
+                        <VBox prefWidth="200.0">
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Algorithm:" />
-                              <ChoiceBox fx:id="algoChoiceBox" prefHeight="25.0" prefWidth="169.0">
+                              <ChoiceBox fx:id="algoChoiceBox" prefHeight="25.0" prefWidth="130.0">
                                  <VBox.margin>
                                     <Insets right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -46,10 +46,10 @@
                               <Insets top="5.0" />
                            </padding>
                         </VBox>
-                        <VBox>
+                        <VBox prefWidth="200.0">
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Simulation Mode:" />
-                              <ChoiceBox fx:id="modeChoiceBox" prefHeight="25.0" prefWidth="123.0">
+                              <ChoiceBox fx:id="modeChoiceBox" prefHeight="25.0" prefWidth="130.0">
                                  <VBox.margin>
                                     <Insets right="5.0" top="5.0" />
                                  </VBox.margin>
@@ -59,8 +59,8 @@
                               <Insets left="5.0" top="5.0" />
                            </padding>
                         </VBox>
-                        <Region prefHeight="52.0" prefWidth="90.0" HBox.hgrow="ALWAYS" />
-                        <VBox prefWidth="235.0">
+                        <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <VBox prefHeight="54.0" prefWidth="211.0">
                            <children>
                               <Region prefHeight="25.0" prefWidth="203.0" />
                               <HBox>
@@ -183,13 +183,15 @@
                         </HBox>
                         <TableView fx:id="processTable" prefHeight="496.0" prefWidth="575.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="idColumn" minWidth="80.0" text="Process" />
-                            <TableColumn fx:id="arrivalColumn" prefWidth="120.0" text="Arrival Time" />
-                              <TableColumn fx:id="burstColumn" prefWidth="120.0" text="Burst Time" />
-                              <TableColumn fx:id="remainingTimeColumn" prefWidth="120.0" text="Remaining Time" />
+                            <TableColumn fx:id="idColumn" minWidth="50.0" prefWidth="68.0" resizable="false" text="Process" />
+                            <TableColumn fx:id="arrivalColumn" prefWidth="90.0" text="Arrival Time" />
+                              <TableColumn fx:id="burstColumn" prefWidth="85.0" text="Burst Time" />
+                              <TableColumn fx:id="remainingTimeColumn" prefWidth="115.0" text="Remaining Time" />
+                              <TableColumn prefWidth="120.0" text="Turnaround Time" />
+                              <TableColumn prefWidth="93.0" text="Waiting Time" />
                           </columns>
                            <VBox.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                              <Insets bottom="5.0" left="7.0" right="7.0" top="5.0" />
                            </VBox.margin>
                         </TableView>
                      </children>
@@ -197,39 +199,38 @@
                   <Label style="-fx-background-color: #f3f3f3;" text="Process Editor" translateX="10.0" translateY="-10.0" StackPane.alignment="TOP_LEFT" />
                </children>
             </StackPane>
-            <StackPane prefHeight="102.0" prefWidth="586.0" style="-fx-border-color: #d3d3d3; -fx-border-radius: 5; -fx-border-width: 1;">
+            <StackPane style="-fx-border-color: #d3d3d3; -fx-border-radius: 5; -fx-border-width: 1;">
                <VBox.margin>
                   <Insets top="10.0" />
                </VBox.margin>
                <children>
                   <Label style="-fx-background-color: #f4f4f4;" text="Statistics" translateX="10.0" translateY="-10.0" StackPane.alignment="TOP_LEFT" />
-                  <VBox prefHeight="89.0" prefWidth="594.0">
+                  <VBox prefHeight="66.0" prefWidth="588.0">
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                      <children>
-                        <Region prefHeight="18.0" prefWidth="565.0" />
                         <HBox prefHeight="19.0" prefWidth="565.0">
                            <children>
-                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average waiting Time:">
+                              <Label alignment="TOP_LEFT" prefHeight="17.0" prefWidth="130.0" text="Average Waiting Time:">
                                  <HBox.margin>
                                     <Insets top="4.0" />
                                  </HBox.margin></Label>
-                              <TextField fx:id="avgWaitingField" editable="false" prefHeight="10.0" prefWidth="90.0">
+                              <TextField fx:id="avgWaitingField" editable="false" prefHeight="10.0" prefWidth="110.0">
                                  <HBox.margin>
-                                    <Insets left="-8.0" />
+                                    <Insets left="-3.0" />
                                  </HBox.margin></TextField>
                               <Label alignment="CENTER" prefHeight="17.0" prefWidth="181.0" text="Average Turnaround Time:">
                                  <HBox.margin>
-                                    <Insets left="10.0" top="4.0" />
+                                    <Insets left="15.0" top="4.0" />
                                  </HBox.margin></Label>
-                              <TextField fx:id="avgTurnaroundField" editable="false" prefHeight="10.0" prefWidth="90.0">
+                              <TextField fx:id="avgTurnaroundField" editable="false" prefHeight="10.0" prefWidth="110.0">
                                  <HBox.margin>
                                     <Insets left="-12.0" />
                                  </HBox.margin></TextField>
                            </children>
                            <VBox.margin>
-                              <Insets left="5.0" />
+                              <Insets left="5.0" top="10.0" />
                            </VBox.margin>
                         </HBox>
                      </children>

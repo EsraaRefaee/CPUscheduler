@@ -23,7 +23,6 @@ public class SimulationManager {
     public List<GanttSegment> getChartSegments(){ return chartSegments; }
     public static void resetCurrentTime() { currentTime = 0; }
     public int getCurrentTime() { return currentTime; }
-    public static void incrementTime() { currentTime++; }
 
     private void updateReadyQueue() {
         // Doesn't loop unless there are processes that have arrived at the current time
@@ -42,6 +41,8 @@ public class SimulationManager {
         if (currentRunning != null) {
             currentRunning.decrementTime();
             if (currentRunning.isFinished()) {
+                currentRunning.setCompletionTime(currentTime + 1);
+                currentRunning.terminateProcess();
                 readyQueue.remove(currentRunning);
                 currentRunning = null;
             }
@@ -103,6 +104,5 @@ public class SimulationManager {
         currentRunning = null;
         currentTime = 0;
         arrivalIdx = 0;
-        segmentStartTime = 0;
     }
 }

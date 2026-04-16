@@ -12,7 +12,7 @@ public class ChartController {
     private final GraphicsContext gc;
     private double pixelsPerTick = 34.0;
     private double leftMargin = 40.0; // where time 0 starts
-    private double topMargin = 50.0; // where the first lane starts
+    private double topMargin = 40.0; // where the first lane starts
     private double laneHeight = 34.0; // vertical height for process lane
 
     public ChartController(Canvas canvas) {
