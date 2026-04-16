@@ -24,27 +24,42 @@ import java.util.ResourceBundle;
 public class PrimaryController implements Initializable {
 
     // Input Fields
-    @FXML private Spinner<Integer> arrivalSpinner;
-    @FXML private Spinner<Integer> burstSpinner;
-    @FXML private Spinner<Integer> prioritySpinner;
-    @FXML private ChoiceBox<String> algoChoiceBox;
-    @FXML private ChoiceBox<String> modeChoiceBox;
+    @FXML
+    private Spinner<Integer> arrivalSpinner;
+    @FXML
+    private Spinner<Integer> burstSpinner;
+    @FXML
+    private Spinner<Integer> prioritySpinner;
+    @FXML
+    private ChoiceBox<String> algoChoiceBox;
+    @FXML
+    private ChoiceBox<String> modeChoiceBox;
 
     // Table
-    @FXML private TableView<Process> processTable;
-    @FXML private TableColumn<Process, Integer> idColumn;
-    @FXML private TableColumn<Process, Integer> arrivalColumn;
-    @FXML private TableColumn<Process, Integer> burstColumn;
-    @FXML private TableColumn<Process, Integer> remainingTimeColumn;
+    @FXML
+    private TableView<Process> processTable;
+    @FXML
+    private TableColumn<Process, Integer> idColumn;
+    @FXML
+    private TableColumn<Process, Integer> arrivalColumn;
+    @FXML
+    private TableColumn<Process, Integer> burstColumn;
+    @FXML
+    private TableColumn<Process, Integer> remainingTimeColumn;
 
     // MUST match the fx:id in FXML file exactly
-    @FXML private Button startButton;
-    @FXML private Button pauseButton;
-    @FXML private Button addButton;
-    @FXML private Button removeButton;
+    @FXML
+    private Button startButton;
+    @FXML
+    private Button pauseButton;
+    @FXML
+    private Button addButton;
+    @FXML
+    private Button removeButton;
 
     // Canvas
-    @FXML private Canvas ganttCanvas;
+    @FXML
+    private Canvas ganttCanvas;
 
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
@@ -63,6 +78,13 @@ public class PrimaryController implements Initializable {
 
     private void updateStartButtonState() {
         startButton.setDisable(!isReadyToStart());
+
+        // If we are paused, we don't want to allow a restart
+        if (isRunning && isPaused) {
+            startButton.setDisable(true);
+        } else {
+            startButton.setDisable(!isReadyToStart());
+        }
     }
 
     @Override
@@ -85,14 +107,15 @@ public class PrimaryController implements Initializable {
         burstColumn.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
         remainingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("remainingTime"));
 
-
         processTable.setItems(processList);
 
         // 3. Initialize Spinners
         arrivalSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
         burstSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
         prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
-        arrivalSpinner.setEditable(true); burstSpinner.setEditable(true); prioritySpinner.setEditable(true);
+        arrivalSpinner.setEditable(true);
+        burstSpinner.setEditable(true);
+        prioritySpinner.setEditable(true);
 
         // 4. Algorithm Selection Listener (Handles Requirement #10)
         algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -129,6 +152,11 @@ public class PrimaryController implements Initializable {
         // When running: Modifying the list (Add/Remove) is forbidden
         addButton.setDisable(isRunning);
         removeButton.setDisable(isRunning);
+
+        boolean allowEditing = !isRunning || isPaused;
+
+        addButton.setDisable(!allowEditing);
+        removeButton.setDisable(!allowEditing);
     }
 
     private void handleAlgorithmStrategy(String algo) {
@@ -179,6 +207,8 @@ public class PrimaryController implements Initializable {
         if (selected != null) {
             processList.remove(selected);
             simulationManager.removeProcess(selected);
+            simulationManager.resetCurrentProcess();
+            updateStartButtonState();
         }
     }
 
@@ -195,7 +225,8 @@ public class PrimaryController implements Initializable {
     @FXML
     private void handleStart() {
 
-        // Rebuild simulation every time Start is pressed to reflect any changes in the process list or algorithm selection
+        // Rebuild simulation every time Start is pressed to reflect any changes in the
+        // process list or algorithm selection
         simulationManager = new SimulationManager();
         handleAlgorithmStrategy(algoChoiceBox.getValue());
 
@@ -213,7 +244,9 @@ public class PrimaryController implements Initializable {
         updateButtonStates(true, false);
 
         // Stop any old timeline
-        if (timer != null) { timer.stop(); }
+        if (timer != null) {
+            timer.stop();
+        }
 
         if (modeChoiceBox.getValue().contains("Dynamic")) {
             timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
@@ -258,6 +291,7 @@ public class PrimaryController implements Initializable {
     private void handlePause() {
         isPaused = !isPaused;
         pauseButton.setText(isPaused ? "Resume" : "Pause");
+        updateButtonStates(isRunning, isPaused);
     }
 
     private void showError(String message) {
@@ -267,11 +301,14 @@ public class PrimaryController implements Initializable {
     }
 
     // Statistics
-    @FXML private TextField avgWaitingField;
-    @FXML private TextField avgTurnaroundField;
+    @FXML
+    private TextField avgWaitingField;
+    @FXML
+    private TextField avgTurnaroundField;
+
     private void updateStatistics() {
         double avgWait = simulationManager.getAverageWaitingTime();
-        double avgTurnaround  = simulationManager.getAverageTurnaroundTime();
+        double avgTurnaround = simulationManager.getAverageTurnaroundTime();
         avgWaitingField.setText(String.format("%.2f", avgWait));
         avgTurnaroundField.setText(String.format("%.2f", avgTurnaround));
     }
@@ -280,6 +317,5 @@ public class PrimaryController implements Initializable {
         avgWaitingField.clear();
         avgTurnaroundField.clear();
     }
-
 
 }
