@@ -2,7 +2,7 @@ package com.example.Logic;
 
 public class Process {
     private static int idCounter = 0;
-    private final int id;
+    private int id;
     private final int burstTime;
     private final int arrivalTime;
     private int remainingTime;
@@ -53,5 +53,13 @@ public class Process {
         this.turnaroundTime = completionTime - arrivalTime;
         this.waitingTime = turnaroundTime - burstTime;
     }
-    public static void resetIdCounter() { idCounter = 0; }
+    public static void resetIdCounter() {
+        idCounter = 0;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public static void setIdCounter(int newCount) {
+        idCounter = newCount;
+    }
 }

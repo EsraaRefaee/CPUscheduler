@@ -77,7 +77,7 @@ public class ChartController {
 
         // Draw
         for (GanttSegment segment : segments) {
-           drawTick(segment.getEndTime(), segment.getPid());
+            drawTick(segment.getEndTime(), segment.getPid());
         }
     }
 

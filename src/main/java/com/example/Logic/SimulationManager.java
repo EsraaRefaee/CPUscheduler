@@ -1,13 +1,14 @@
 package com.example.Logic;
 
 import com.example.Logic.Algorithms.Scheduler;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-// Manages the simulation
+/**
+ * Manages the CPU simulation logic, process transitions, and statistics.
+ */
 public class SimulationManager {
     private List<Process> allProcesses = new ArrayList<>();
     private Queue<Process> readyQueue = new LinkedList<>();
@@ -17,6 +18,8 @@ public class SimulationManager {
     private int arrivalIdx = 0;
     private Process currentRunning = null;
     private boolean needsReinitialization = false;
+
+    // --- Configuration Methods ---
 
     public void setAlgorithm(Scheduler algo) {
         this.scheduler = algo;
@@ -38,108 +41,124 @@ public class SimulationManager {
         return currentTime;
     }
 
+    /**
+     * Checks for processes that have arrived at the current time and adds them to the ready queue.
+     */
     private void updateReadyQueue() {
-        // Doesn't loop unless there are processes that have arrived at the current time
         while (arrivalIdx < allProcesses.size() && allProcesses.get(arrivalIdx).getArrivalTime() <= currentTime) {
             readyQueue.add(allProcesses.get(arrivalIdx));
             arrivalIdx++;
         }
     }
 
-    // Simulate one tick of the CPU scheduler (choose next process and dispatch it)
+    // --- Core Simulation Logic ---
+
+    /**
+     * Executes one tick of the CPU.
+     * Handles process selection, execution, and termination.
+     */
     public Process tick() {
         if (needsReinitialization) {
-            // Force the scheduler to clear any potential stale state
-            // or just set your internal pointers to null
             currentRunning = null;
             needsReinitialization = false;
         }
+
         updateReadyQueue();
-        if (currentRunning != null && !allProcesses.contains(currentRunning)) {
-            currentRunning = null;
-        }
+
+        // 1. Clean Queue: Remove any finished processes before the scheduler runs
+        readyQueue.removeIf(p -> p.isFinished());
+
+        // 2. Schedule: Ask the selected algorithm which process should run now
         currentRunning = scheduler.getNextProcess(readyQueue, currentTime);
-        Process executedThisTick = currentRunning; // Store the process that will run in this tick for Gantt chart
-                                                   // segment creation
+
+        // Reference for the Gantt Chart segment
+        Process executedThisTick = currentRunning;
 
         if (currentRunning != null) {
             currentRunning.decrementTime();
+
+            // 3. Termination: Handle process completion logic
             if (currentRunning.isFinished()) {
                 currentRunning.setCompletionTime(currentTime + 1);
                 currentRunning.terminateProcess();
+
+                // Cleanup current running state
                 readyQueue.remove(currentRunning);
                 currentRunning = null;
             }
         }
+
         currentTime++;
-        return executedThisTick; // Process that ran in this tick (To deal with idle state)
+        return executedThisTick;
     }
 
+    /**
+     * Generates all Gantt segments for the entire simulation (used in Static mode).
+     */
     public void generateSegments() {
-        // Clear list first to avoid multiple generations if called for than once
         chartSegments.clear();
 
         while (!isAllFinished()) {
             Process thisTickProcess = tick();
             chartSegments.add(new GanttSegment(currentTime - 1, currentTime,
-                    thisTickProcess != null ? thisTickProcess.getId() : -1)); // -1 for idle
-
+                    thisTickProcess != null ? thisTickProcess.getId() : -1)); // -1 represents CPU Idle
         }
     }
 
+    /**
+     * Rebuilds the ready queue based on the current simulation time.
+     */
     public void rebuildReadyQueue() {
         readyQueue.clear();
         arrivalIdx = 0;
 
-        // loop through all processes
         int processesNum = allProcesses.size();
         for (int i = 0; i < processesNum; i++) {
             Process p = allProcesses.get(i);
 
-            // only add processes that have arrived and are not finished
             if (p.getArrivalTime() <= currentTime && !p.isFinished())
                 readyQueue.add(p);
 
-            // Update the arrivalIdx to just after the last arrived process (first not-arrived)
             if (p.getArrivalTime() <= currentTime)
                 arrivalIdx = i + 1;
         }
     }
 
+    /**
+     * Adds a new process and keeps the list sorted by arrival time for correct queueing.
+     */
     public void addProcess(Process p) {
         allProcesses.add(p);
-        // Must be sorted by arrival time so updateReadyQueue works
         allProcesses.sort((p1, p2) -> Integer.compare(p1.getArrivalTime(), p2.getArrivalTime()));
     }
 
-
+    /**
+     * Checks if all processes have completed their execution.
+     */
     public boolean isAllFinished() {
-        // Finished if:
-        // 1. All processes have been added to the ready queue (arrivalIdx reaches list
-        // size)
-        // 2. The ready queue is empty
-        // 3. No process is currently on the CPU
         return arrivalIdx >= allProcesses.size() && readyQueue.isEmpty() && currentRunning == null;
     }
 
-    // when remove process from gui remove from simulation manager
+    /**
+     * Removes a process from the simulation pool and resets internal pointers.
+     */
     public void removeProcess(Process p) {
         if (allProcesses.contains(p)) {
             allProcesses.remove(p);
             if (readyQueue.contains(p)) {
                 readyQueue.remove(p);
             }
-            // CRITICAL: If the removed process is the one currently running,
-            // nullify it so tick() doesn't try to operate on it.
+
             if (currentRunning != null && currentRunning.equals(p)) {
                 currentRunning = null;
             }
-            // Important: Reset the pointer so the manager re-scans
-            // the pool for arrivals correctly when the simulation starts.
+
             arrivalIdx = 0;
             needsReinitialization = true;
         }
     }
+
+    // --- Statistics Calculations ---
 
     public double getAverageWaitingTime() {
         if (allProcesses.isEmpty())
@@ -159,6 +178,9 @@ public class SimulationManager {
         return sum / allProcesses.size();
     }
 
+    /**
+     * Resets the manager state for a completely new simulation.
+     */
     public void clearAll() {
         allProcesses.clear();
         readyQueue.clear();

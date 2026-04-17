@@ -1,6 +1,6 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMain.java to edit this template
+ * CPU Scheduling Simulator 2026
+ * Developed using JavaFX and standard scheduling algorithms.
  */
 package com.example;
 
@@ -23,14 +23,14 @@ import java.util.ResourceBundle;
 
 public class PrimaryController implements Initializable {
 
-    // Input Fields
+    // --- FXML UI Components ---/////////////////////
+    @FXML private Spinner<Integer> quantumSpinner;
     @FXML private Spinner<Integer> arrivalSpinner;
     @FXML private Spinner<Integer> burstSpinner;
     @FXML private Spinner<Integer> prioritySpinner;
     @FXML private ChoiceBox<String> algoChoiceBox;
     @FXML private ChoiceBox<String> modeChoiceBox;
 
-    // Table
     @FXML private TableView<Process> processTable;
     @FXML private TableColumn<Process, Integer> idColumn;
     @FXML private TableColumn<Process, Integer> arrivalColumn;
@@ -38,16 +38,16 @@ public class PrimaryController implements Initializable {
     @FXML private TableColumn<Process, Integer> remainingTimeColumn;
     @FXML private TableColumn<Process, Integer> turnaroundColumn;
     @FXML private TableColumn<Process, Integer> waitingColumn;
+    @FXML private TableColumn<Process, Integer> priorityColumn;
 
-    // MUST match the fx:id in FXML file exactly
     @FXML private Button startButton;
     @FXML private Button pauseButton;
     @FXML private Button addButton;
     @FXML private Button removeButton;
 
-    // Canvas
     @FXML private Canvas ganttCanvas;
 
+    // --- Logic & Simulation Variables ---
     private ObservableList<Process> processList = FXCollections.observableArrayList();
     private SimulationManager simulationManager = new SimulationManager();
     private ChartController chartController;
@@ -55,6 +55,9 @@ public class PrimaryController implements Initializable {
     private boolean isPaused = false;
     private boolean isRunning = false;
 
+    /**
+     * Checks if the simulation is ready to run based on process count and selections.
+     */
     private boolean isReadyToStart() {
         boolean hasEnoughProcesses = processList.size() >= 2;
         boolean hasValidAlgo = !algoChoiceBox.getValue().equals("Choose Algorithm...");
@@ -63,10 +66,12 @@ public class PrimaryController implements Initializable {
         return hasEnoughProcesses && hasValidAlgo && hasValidMode;
     }
 
+    /**
+     * Manages the enabled/disabled state of the Start button.
+     */
     private void updateStartButtonState() {
         startButton.setDisable(!isReadyToStart());
 
-        // If we are paused, we don't want to allow a restart
         if (isRunning && isPaused) {
             startButton.setDisable(true);
         } else {
@@ -78,7 +83,7 @@ public class PrimaryController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         chartController = new ChartController(ganttCanvas);
 
-        // 1. Populate Selection Boxes with Placeholders
+        // 1. Initialize ChoiceBox Options
         algoChoiceBox.setItems(FXCollections.observableArrayList(
                 "Choose Algorithm...", "FCFS", "SJF (Non Preemptive)", "SRJF (Preemptive)",
                 "Priority (Non Preemptive)", "Priority (Preemptive)", "Round Robin"));
@@ -88,66 +93,91 @@ public class PrimaryController implements Initializable {
                 "Select Mode...", "Dynamic (Live 1s/unit)", "Static (Instant)"));
         modeChoiceBox.setValue("Select Mode...");
 
-        // 2. Link Table Columns (Matches getters in your Process class)
+        // 2. Setup Algorithm Selection Listeners
+        algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                // Enable/Disable spinners based on algorithm requirements
+                prioritySpinner.setDisable(!newVal.contains("Priority"));
+                quantumSpinner.setDisable(!newVal.equals("Round Robin"));
+
+                handleAlgorithmStrategy(newVal);
+                processTable.refresh();
+                updateStartButtonState();
+            }
+        });
+
+        // 3. Link Table Columns to Process class properties
         idColumn.setCellValueFactory(new PropertyValueFactory<>("stringId"));
         arrivalColumn.setCellValueFactory(new PropertyValueFactory<>("arrivalTime"));
         burstColumn.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
         remainingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("remainingTime"));
         turnaroundColumn.setCellValueFactory(new PropertyValueFactory<>("turnaroundTime"));
         waitingColumn.setCellValueFactory(new PropertyValueFactory<>("waitingTime"));
+        priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
 
         processTable.setItems(processList);
 
-        // 3. Initialize Spinners
+        // 4. Configure Input Spinners
         arrivalSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
-        burstSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
-        prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
         arrivalSpinner.setEditable(true);
+        burstSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
         burstSpinner.setEditable(true);
-        prioritySpinner.setEditable(true);
+        prioritySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 0));
+        prioritySpinner.setDisable(true);
+        quantumSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 3));
+        quantumSpinner.setDisable(true);
 
-        // 4. Algorithm Selection Listener
-        algoChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals("Choose Algorithm...")) {
-                boolean needsPriority = newVal.contains("Priority");
-                prioritySpinner.setDisable(!needsPriority); //
-                handleAlgorithmStrategy(newVal);
+        // 5. Custom Cell Factory for Priority Column (Hides priority if not applicable)
+        priorityColumn.setCellFactory(column -> new TableCell<Process, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    String selectedAlgo = algoChoiceBox.getValue();
+                    if (selectedAlgo != null && selectedAlgo.contains("Priority")) {
+                        setText(item.toString());
+                    } else {
+                        setText("-");
+                    }
+                }
             }
         });
 
-        // Initial state: Start, Pause, and Stop buttons disabled
+        // 6. Mode Selection Listener (Handles re-indexing for Static mode)
+        modeChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null && newV.contains("Static")) {
+                for (int i = 0; i < processList.size(); i++) {
+                    processList.get(i).setId(i);
+                }
+                Process.setIdCounter(processList.size());
+                processTable.refresh();
+            }
+            updateStartButtonState();
+        });
+
+        // Set initial button states
         startButton.setDisable(true);
         pauseButton.setDisable(true);
-
-        // Enable Start button only when list size >= 2
-        // Listen to list changes
         processList.addListener((javafx.collections.ListChangeListener<Process>) c -> updateStartButtonState());
-
-        // Listen to ChoiceBox changes
-        algoChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((obs, old, newV) -> updateStartButtonState());
-        modeChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((obs, old, newV) -> updateStartButtonState());
-
-        // Set initial state
-        updateStartButtonState();
     }
 
+    /**
+     * Controls which UI buttons are active during simulation.
+     */
     private void updateButtonStates(boolean isRunning, boolean isPaused) {
-        // When running: Start is disabled, Pause and Stop are enabled
         startButton.setDisable(isRunning);
         pauseButton.setDisable(!isRunning);
 
-        // When running: Modifying the list (Add/Remove) is forbidden
-        addButton.setDisable(isRunning);
-        removeButton.setDisable(isRunning);
-
         boolean allowEditing = !isRunning || isPaused;
-
         addButton.setDisable(!allowEditing);
         removeButton.setDisable(!allowEditing);
     }
 
+    /**
+     * Assigns the appropriate scheduling algorithm logic.
+     */
     private void handleAlgorithmStrategy(String algo) {
         switch (algo) {
             case "FCFS":
@@ -166,27 +196,23 @@ public class PrimaryController implements Initializable {
                 simulationManager.setAlgorithm(new PreemptivePriority());
                 break;
             case "Round Robin":
-                simulationManager.setAlgorithm(new RoundRobin());
+                RoundRobin rr = new RoundRobin();
+                rr.setTimeQuantum(quantumSpinner.getValue());
+                simulationManager.setAlgorithm(rr);
                 break;
         }
     }
 
     @FXML
     private void handleAddProcess() {
-        // Collect inputs from UI spinners
         int arrival = arrivalSpinner.getValue();
         int burst = burstSpinner.getValue();
-
-        // Only use priority if the algorithm requires it
         int priority = prioritySpinner.isDisabled() ? 0 : prioritySpinner.getValue();
 
-        // Create the new process object
         Process newP = new Process(burst, arrival, priority);
         processList.add(newP);
-        simulationManager.addProcess(newP); // Add to Logic Manager (Makes it available for the scheduler)
+        simulationManager.addProcess(newP);
 
-        // If we add a new process during pause, it should be considered in the ready queue immediately
-        // and not wait for the next tick
         if (isRunning) {
             simulationManager.rebuildReadyQueue();
         }
@@ -195,11 +221,26 @@ public class PrimaryController implements Initializable {
     @FXML
     private void handleRemoveProcess() {
         Process selected = processTable.getSelectionModel().getSelectedItem();
+
         if (selected != null) {
             processList.remove(selected);
             simulationManager.removeProcess(selected);
-            simulationManager.resetCurrentProcess();
-            simulationManager.rebuildReadyQueue();
+
+            String mode = modeChoiceBox.getValue();
+            if (mode != null && mode.contains("Static")) {
+                // Keep IDs sequential in Static mode
+                for (int i = 0; i < processList.size(); i++) {
+                    processList.get(i).setId(i);
+                }
+                Process.setIdCounter(processList.size());
+                processTable.refresh();
+            }
+
+            if (processList.isEmpty()) {
+                algoChoiceBox.setDisable(false);
+                modeChoiceBox.setDisable(false);
+                Process.resetIdCounter();
+            }
             updateStartButtonState();
         }
     }
@@ -210,24 +251,20 @@ public class PrimaryController implements Initializable {
         simulationManager = new SimulationManager();
         Process.resetIdCounter();
         clearStatistics();
-        chartController.reset(); // Clears the canvas
+        chartController.reset();
         simulationManager.clearAll();
     }
 
     @FXML
     private void handleStart() {
-
-        // Rebuild simulation every time Start is pressed to reflect any changes in the
-        // process list or algorithm selection
         simulationManager = new SimulationManager();
         handleAlgorithmStrategy(algoChoiceBox.getValue());
 
         for (Process p : processList) {
-            p.setRemainingTime(p.getBurstTime()); // Reset remaining time before starting
+            p.setRemainingTime(p.getBurstTime());
             simulationManager.addProcess(p);
         }
 
-        // Reset visual state
         chartController.reset();
         SimulationManager.resetCurrentTime();
         isPaused = false;
@@ -235,16 +272,14 @@ public class PrimaryController implements Initializable {
         isRunning = true;
         updateButtonStates(true, false);
 
-        // Stop any old timeline
         if (timer != null) {
             timer.stop();
         }
 
         if (modeChoiceBox.getValue().contains("Dynamic")) {
+            // Live Simulation: Tick by tick
             timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-                if (isPaused) {
-                    return;
-                }
+                if (isPaused) return;
 
                 if (simulationManager.isAllFinished()) {
                     timer.stop();
@@ -261,14 +296,14 @@ public class PrimaryController implements Initializable {
                 } else {
                     chartController.drawTick(simulationManager.getCurrentTime(), executed.getId());
                 }
-                processTable.refresh(); // Update remaining times in the table
+                processTable.refresh();
             }));
 
             timer.setCycleCount(Timeline.INDEFINITE);
             timer.playFromStart();
 
         } else {
-            // Static mode: run the whole simulation first
+            // Instant Simulation: Calculate and Draw entire chart
             simulationManager.generateSegments();
             chartController.drawStatic(simulationManager.getChartSegments());
 
@@ -292,7 +327,7 @@ public class PrimaryController implements Initializable {
         alert.showAndWait();
     }
 
-    // Statistics
+    // --- Statistics and Calculations ---
     @FXML private TextField avgWaitingField;
     @FXML private TextField avgTurnaroundField;
 
@@ -308,4 +343,14 @@ public class PrimaryController implements Initializable {
         avgTurnaroundField.clear();
     }
 
+    /**
+     * Re-assigns IDs sequentially to all processes in the list.
+     */
+    private void reindexProcesses() {
+        for (int i = 0; i < processList.size(); i++) {
+            processList.get(i).setId(i);
+        }
+        Process.setIdCounter(processList.size());
+        processTable.refresh();
+    }
 }
