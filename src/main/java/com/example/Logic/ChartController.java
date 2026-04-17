@@ -28,12 +28,6 @@ public class ChartController {
         double w = pixelsPerTick;
         double h = laneHeight;
 
-//        gc.setFill(Color.web("#edf3ff"));
-//        gc.fillRect(x, y, w, h); // assuming constant square size
-//
-//        gc.setStroke(Color.web("#a4b5de"));
-//        gc.strokeRect(x, y, w, h);
-
         Color fill = getColorForPid(pid);
         Color stroke = (pid == -1) ? Color.web("#b3b3b3") : fill.deriveColor(0, 1.0, 0.75, 1.0);
 

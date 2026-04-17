@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 
 public class PrimaryController implements Initializable {
 
-    // --- FXML UI Components ---/////////////////////
     @FXML private Spinner<Integer> quantumSpinner;
     @FXML private Spinner<Integer> arrivalSpinner;
     @FXML private Spinner<Integer> burstSpinner;
@@ -55,9 +54,6 @@ public class PrimaryController implements Initializable {
     private boolean isPaused = false;
     private boolean isRunning = false;
 
-    /**
-     * Checks if the simulation is ready to run based on process count and selections.
-     */
     private boolean isReadyToStart() {
         boolean hasEnoughProcesses = processList.size() >= 2;
         boolean hasValidAlgo = !algoChoiceBox.getValue().equals("Choose Algorithm...");
@@ -66,9 +62,6 @@ public class PrimaryController implements Initializable {
         return hasEnoughProcesses && hasValidAlgo && hasValidMode;
     }
 
-    /**
-     * Manages the enabled/disabled state of the Start button.
-     */
     private void updateStartButtonState() {
         startButton.setDisable(!isReadyToStart());
 
@@ -163,9 +156,6 @@ public class PrimaryController implements Initializable {
         processList.addListener((javafx.collections.ListChangeListener<Process>) c -> updateStartButtonState());
     }
 
-    /**
-     * Controls which UI buttons are active during simulation.
-     */
     private void updateButtonStates(boolean isRunning, boolean isPaused) {
         startButton.setDisable(isRunning);
         pauseButton.setDisable(!isRunning);
@@ -175,9 +165,6 @@ public class PrimaryController implements Initializable {
         removeButton.setDisable(!allowEditing);
     }
 
-    /**
-     * Assigns the appropriate scheduling algorithm logic.
-     */
     private void handleAlgorithmStrategy(String algo) {
         switch (algo) {
             case "FCFS":
@@ -343,9 +330,6 @@ public class PrimaryController implements Initializable {
         avgTurnaroundField.clear();
     }
 
-    /**
-     * Re-assigns IDs sequentially to all processes in the list.
-     */
     private void reindexProcesses() {
         for (int i = 0; i < processList.size(); i++) {
             processList.get(i).setId(i);
